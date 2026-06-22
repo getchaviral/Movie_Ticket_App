@@ -1,30 +1,40 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import CastList from '../components/CastList.jsx'
 import FormatSelector from '../components/FormatSelector.jsx'
 import HeroBanner from '../components/HeroBanner.jsx'
 import MovieInfo from '../components/MovieInfo.jsx'
 import PrimaryButton from '../components/PrimaryButton.jsx'
-import { movies } from '../data/dummyData.js'
+import { getMovieById } from '../api/content.js'
 
 function MovieDetails() {
   const { movieId } = useParams()
   const navigate = useNavigate()
-  const selectedMovie = movies.find((item) => item.id === movieId) || movies[0]
-  const movie = {
-    ageRating: 'PG-13',
-    starRating: '5.1',
-    description:
-      'A research team encounters multiple threats while exploring the depths of the ocean, including a malevolent mining operation.',
-    releaseDate: '10 June 2026',
-    formats: ['2D', '3D'],
-    cast: movies[0].cast,
-    ...selectedMovie,
-  }
-  const [selectedFormat, setSelectedFormat] = useState(movie.formats[0])
+  const [movie, setMovie] = useState(null)
+  const [selectedFormat, setSelectedFormat] = useState('2D')
+
+  useEffect(() => {
+    async function loadMovie() {
+      try {
+        const fetchedMovie = await getMovieById(movieId)
+        if (fetchedMovie) {
+          setMovie(fetchedMovie)
+          setSelectedFormat(fetchedMovie.formats?.[0] || '2D')
+        }
+      } catch (error) {
+        console.error('Failed to load movie details:', error.message)
+      }
+    }
+
+    loadMovie()
+  }, [movieId])
 
   function handleGetTickets() {
-    navigate('/theatres')
+    navigate(`/movies/${movieId}/theatres`)
+  }
+
+  if (!movie) {
+    return <p className="p-6 text-center text-[#687690]">Loading movie details…</p>
   }
 
   return (

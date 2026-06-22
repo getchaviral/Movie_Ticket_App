@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthButton from './AuthButton.jsx'
 import InputField from './InputField.jsx'
+import { loginUser } from '../../api/auth.js'
 
 function LoginForm() {
   const navigate = useNavigate()
   const [errors, setErrors] = useState({})
+  const [serverError, setServerError] = useState('')
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -32,15 +34,16 @@ function LoginForm() {
     return Object.keys(nextErrors).length === 0
   }
 
-  function handleLogin() {
-    if (validateLogin()) {
-      const mockUser = {
-        email: form.email,
-        name: 'Demo User',
-      }
+  async function handleLogin() {
+    if (!validateLogin()) {
+      return
+    }
 
-      localStorage.setItem('mockUser', JSON.stringify(mockUser))
+    try {
+      await loginUser(form)
       navigate('/home')
+    } catch (error) {
+      setServerError(error.message)
     }
   }
 
@@ -61,6 +64,10 @@ function LoginForm() {
         type="password"
         value={form.password}
       />
+
+      {serverError && (
+        <p className="mt-3 text-sm text-red-600">{serverError}</p>
+      )}
 
       <div className="mt-[100px]">
         <AuthButton onClick={handleLogin}>Login</AuthButton>

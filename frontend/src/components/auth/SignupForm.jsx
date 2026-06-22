@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import AuthButton from './AuthButton.jsx'
 import InputField from './InputField.jsx'
+import { registerUser } from '../../api/auth.js'
 
 function SignupForm({ onSignupSuccess }) {
   const [errors, setErrors] = useState({})
+  const [serverError, setServerError] = useState('')
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -39,8 +41,18 @@ function SignupForm({ onSignupSuccess }) {
     return Object.keys(nextErrors).length === 0
   }
 
-  function handleSignup() {
-    if (validateSignup()) {
+  async function handleSignup() {
+    if (!validateSignup()) {
+      return
+    }
+
+    try {
+      await registerUser({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      })
+
       setForm({
         name: '',
         email: '',
@@ -48,6 +60,8 @@ function SignupForm({ onSignupSuccess }) {
         confirmPassword: '',
       })
       onSignupSuccess()
+    } catch (error) {
+      setServerError(error.message)
     }
   }
 
@@ -83,6 +97,10 @@ function SignupForm({ onSignupSuccess }) {
         type="password"
         value={form.confirmPassword}
       />
+
+      {serverError && (
+        <p className="mt-3 text-sm text-red-600">{serverError}</p>
+      )}
 
       <div className="mt-[17px]">
         <AuthButton onClick={handleSignup}>Sign Up</AuthButton>
