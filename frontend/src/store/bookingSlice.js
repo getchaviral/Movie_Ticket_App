@@ -9,6 +9,7 @@ const initialState = {
   selectedSchedule: null,
   selectedSeats: [],
   totalPrice: 0,
+  confirmedBookings: [],
 }
 
 const bookingSlice = createSlice({
@@ -43,8 +44,23 @@ const bookingSlice = createSlice({
     setTotalPrice(state, action) {
       state.totalPrice = action.payload
     },
+    addConfirmedBooking(state, action) {
+      state.confirmedBookings.unshift(action.payload)
+    },
+    cancelConfirmedBooking(state, action) {
+      state.confirmedBookings = state.confirmedBookings.map((booking) => {
+        if (booking.bookingId === action.payload) {
+          return { ...booking, status: 'cancelled' }
+        }
+
+        return booking
+      })
+    },
     clearBooking() {
-      return initialState
+      return {
+        ...initialState,
+        confirmedBookings: state.confirmedBookings,
+      }
     },
   },
 })
@@ -58,6 +74,8 @@ export const {
   setSelectedSchedule,
   setSelectedSeats,
   setTotalPrice,
+  addConfirmedBooking,
+  cancelConfirmedBooking,
   clearBooking,
 } = bookingSlice.actions
 

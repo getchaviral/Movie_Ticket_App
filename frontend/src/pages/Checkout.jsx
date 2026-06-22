@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import CheckoutHeader from '../components/CheckoutHeader.jsx'
@@ -6,12 +7,21 @@ import PaymentForm from '../components/PaymentForm.jsx'
 import PaymentMethodSelector from '../components/PaymentMethodSelector.jsx'
 import PrimaryButton from '../components/PrimaryButton.jsx'
 import SummaryCard from '../components/SummaryCard.jsx'
-import { movies } from '../data/dummyData.js'
+import { movies, theatres } from '../data/dummyData.js'
+import { addConfirmedBooking } from '../store/bookingSlice.js'
 
 function Checkout() {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const booking = useSelector((state) => state.booking)
   const movie = booking.selectedMovie || movies[0]
+  const theatre = booking.selectedTheatre || theatres[0]
+  const schedule = booking.selectedSchedule || {
+    date: 'Friday, October 10',
+    time: '10:00 AM',
+    format: '2D',
+    screen: 'Screen 1',
+  }
   const seats = booking.selectedSeats.length > 0 ? booking.selectedSeats : ['J9', 'J10']
   const ticketPrice = 280
   const bookingFee = 20
@@ -60,6 +70,20 @@ function Checkout() {
 
   function handleCompletePayment() {
     if (validateForm()) {
+      const confirmedBooking = {
+        bookingId: `BOOK-${Date.now()}`,
+        movie,
+        theatre,
+        schedule,
+        seats,
+        amountPaid: totalAmount,
+        transactionDate: new Date().toLocaleString(),
+        status: 'active',
+      }
+
+      // Store the exact booking the user just paid for.
+      // Success and MyBookings read from this Redux state.
+      dispatch(addConfirmedBooking(confirmedBooking))
       navigate('/success')
     }
   }

@@ -1,22 +1,25 @@
 import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import BookingTabs from '../components/BookingTabs.jsx'
 import CancelButton from '../components/CancelButton.jsx'
 import TicketCard from '../components/TicketCard.jsx'
-import { dummyBooking } from '../data/dummyData.js'
+import { cancelConfirmedBooking } from '../store/bookingSlice.js'
 
 function MyBookings() {
+  const dispatch = useDispatch()
+  const confirmedBookings = useSelector((state) => state.booking.confirmedBookings)
   const [activeTab, setActiveTab] = useState('active')
-  const [activeBookings, setActiveBookings] = useState([dummyBooking])
-  const [pastBookings, setPastBookings] = useState([])
 
   function handleCancelBooking(booking) {
-    // Cancelling removes the booking from active bookings and adds it to past bookings.
-    setActiveBookings(activeBookings.filter((item) => item.bookingId !== booking.bookingId))
-    setPastBookings([...pastBookings, { ...booking, status: 'cancelled' }])
+    // Cancelling marks the booking as cancelled in Redux.
+    // The tabs below split active and cancelled bookings from the same list.
+    dispatch(cancelConfirmedBooking(booking.bookingId))
     setActiveTab('past')
   }
 
+  const activeBookings = confirmedBookings.filter((booking) => booking.status === 'active')
+  const pastBookings = confirmedBookings.filter((booking) => booking.status === 'cancelled')
   const bookingsToShow = activeTab === 'active' ? activeBookings : pastBookings
 
   return (

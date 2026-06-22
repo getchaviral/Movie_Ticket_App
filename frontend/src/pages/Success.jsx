@@ -1,9 +1,13 @@
+import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import SuccessMessage from '../components/SuccessMessage.jsx'
 import TicketCard from '../components/TicketCard.jsx'
 import { dummyBooking } from '../data/dummyData.js'
 
 function Success() {
+  const confirmedBookings = useSelector((state) => state.booking.confirmedBookings)
+  const latestBooking = confirmedBookings[0] || dummyBooking
+
   return (
     <section className="min-h-screen bg-[#F7F7FF] px-[34px] pb-[96px] pt-[28px]">
       <div className="flex justify-end">
@@ -15,7 +19,7 @@ function Success() {
       <SuccessMessage />
 
       <div className="mt-[22px]">
-        <TicketCard booking={dummyBooking} />
+        <TicketCard booking={latestBooking} />
       </div>
 
       <p className="mt-[22px] text-center text-[14px] leading-[18px] text-[#687690]">
